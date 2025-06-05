@@ -1,25 +1,47 @@
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+import { faker } from '@faker-js/faker'
+
+// Função para reutilizar auth
+export const getAuth = () => {
+  return {
+    key: Cypress.env('trello_key'),
+    token: Cypress.env('trello_token'),
+  }
+}
+
+Cypress.Commands.add('createBoard', () => {
+  const { key, token } = getAuth()
+  const boardName = faker.word.words(2)
+
+  return cy.request({
+    method: 'POST',
+    url: `/boards/?name=${boardName}&key=${key}&token=${token}`,
+  }).then(res => {
+    expect(res.status).to.eq(200)
+    return res.body.id
+  })
+})
+
+Cypress.Commands.add('getListIdFromBoard', (boardId) => {
+  const { key, token } = getAuth()
+
+  return cy.request({
+    method: 'GET',
+    url: `/boards/${boardId}/lists?key=${key}&token=${token}`,
+  }).then((res) => {
+    expect(res.status).to.eq(200)
+    return res.body[0].id
+  })
+})
+
+Cypress.Commands.add('createCard', (listId) => {
+  const { key, token } = getAuth()
+  const cardName = faker.commerce.productName()
+
+  return cy.request({
+    method: 'POST',
+    url: `/cards?name=${cardName}&idList=${listId}&key=${key}&token=${token}`,
+  }).then(res => {
+    expect(res.status).to.eq(200)
+    return res.body.id
+  })
+})
