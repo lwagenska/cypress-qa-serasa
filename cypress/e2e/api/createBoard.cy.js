@@ -1,8 +1,11 @@
 import { getAuth } from '../../support/commands'
 
 describe('Criar board via API', () => {
+    let boardId
+
   it('Criar board com sucesso', () => {
-    cy.createBoard().then(boardId => {
+    cy.createBoard().then(id => {
+      boardId = id  
       const { key, token } = getAuth()
 
       cy.request({
@@ -14,5 +17,11 @@ describe('Criar board via API', () => {
         expect(res.body.closed).to.be.false // verifica se o board ta ativo ou arquivado (ver API do Trello)
       })
     })
+  })
+
+  afterEach(() => {
+    if (boardId) {
+      cy.deleteBoard(boardId)
+    }
   })
 })
