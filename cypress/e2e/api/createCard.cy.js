@@ -1,8 +1,12 @@
 import { getAuth } from '../../support/commands'
 
 describe('Criar card via API', () => {
+  let boardId
+
   it('Criar um card com sucesso', () => {
-    cy.createBoard().then(boardId => {
+    cy.createBoard().then(id => {
+      boardId = id  
+
       cy.getListIdFromBoard(boardId).then(listId => {
         cy.createCard(listId).then(cardId => {
           const { key, token } = getAuth()
@@ -19,5 +23,11 @@ describe('Criar card via API', () => {
         })
       })
     })
+  })
+
+  afterEach(() => {
+    if (boardId) {
+      cy.deleteBoard(boardId)
+    }
   })
 })
